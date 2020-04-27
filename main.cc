@@ -9,28 +9,12 @@ T readFromStdin(std::string prompt) {
   return v;
 }
 
-void Repeat(std::function<bool()> fn) {
-loop:
-  if (!(fn())) {
-    return;
-  }
-
-  goto loop;
-}
-
 int main() {
   int sum = 0;
-  Repeat([&sum]() -> bool {
-    auto v = readFromStdin<double>("> ");
-    if (v == 0) {
-      return false;
-    }
-
+  int v;
+  while ((v = readFromStdin<double>("> ")) != 0) {
     sum += v;
-
-    return true;
-  });
-
+  }
   std::cout << "Sum is "s << sum << "." << std::endl;
 
   return EXIT_SUCCESS;
