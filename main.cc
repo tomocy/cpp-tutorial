@@ -1,21 +1,17 @@
 #include "all.h"
 
-template <typename T>
-T readFromStdin(std::string prompt) {
-  std::cout << prompt;
-  T v;
-  std::cin >> v;
-
-  return v;
-}
-
 int main() {
-  int sum = 0;
-  int v;
-  while ((v = readFromStdin<double>("> ")) != 0) {
-    sum += v;
+  int i = 1;
+  while (i <= 9) {
+    int j = 1;
+    while (j <= 9) {
+      std::cout << i * j << "\t"s;
+      ++j;
+    }
+    std::cout << std::endl;
+
+    ++i;
   }
-  std::cout << "Sum is "s << sum << "." << std::endl;
 
   return EXIT_SUCCESS;
 }
