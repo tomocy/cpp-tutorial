@@ -1,16 +1,11 @@
 #include "all.h"
 
 int main() {
-  int i = 1;
-  while (i <= 9) {
-    int j = 1;
-    while (j <= 9) {
+  for (auto i = 1; i <= 9; ++i) {
+    for (auto j = 1; j <= 9; ++j) {
       std::cout << i * j << "\t"s;
-      ++j;
     }
     std::cout << std::endl;
-
-    ++i;
   }
 
   return EXIT_SUCCESS;
