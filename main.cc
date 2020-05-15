@@ -2,70 +2,127 @@
 
 template <typename Array>
 struct Iter {
-  Iter(Array& arr, std::size_t i) : arr(arr), i(i) {}
+  Iter(Array& arr, std::size_t i);
 
-  typename Array::reference operator*() { return arr[i]; }
+  typename Array::reference operator*();
 
-  Iter& operator++() {
-    ++i;
-    return *this;
-  }
+  typename Array::reference operator[](std::size_t n) const;
 
-  Iter operator++(int) {
-    auto copied = *this;
-    ++*this;
-    return copied;
-  }
+  typename Array::iterator& operator++();
 
-  Iter& operator--() {
-    --i;
-    return *this;
-  }
+  typename Array::iterator operator++(int);
 
-  Iter operator--(int) {
-    auto copied = *this;
-    --*this;
-    return copied;
-  }
+  typename Array::iterator& operator+=(std::size_t n);
 
-  bool operator==(const Iter& right) {
-    return i == right.i && arr[i] == right.arr[right.i];
-  }
+  typename Array::iterator operator+(std::size_t n) const;
 
-  bool operator!=(const Iter& right) { return !(*this == right); }
+  typename Array::iterator& operator--();
 
-  Iter& operator+=(std::size_t n) {
-    i += n;
-    return *this;
-  }
+  typename Array::iterator operator--(int);
 
-  Iter operator+(std::size_t n) const {
-    auto copied = *this;
-    copied += n;
-    return copied;
-  }
+  bool operator==(const Iter& right);
 
-  typename Array::reference operator[](std::size_t n) const {
-    return *(*this + n);
-  }
+  bool operator!=(const Iter& right);
 
-  bool operator<(const Iter& right) const { return i < right.i; }
+  bool operator<(const Iter& right) const;
 
-  bool operator<=(const Iter& right) const { return i <= right.i; }
+  bool operator<=(const Iter& right) const;
 
-  bool operator>(const Iter& right) const { return i > right.i; }
+  bool operator>(const Iter& right) const;
 
-  bool operator>=(const Iter& right) const { return i >= right.i; }
+  bool operator>=(const Iter& right) const;
 
   Array& arr;
   std::size_t i;
 };
 
 template <typename Array>
+Iter<Array>::Iter(Array& arr, std::size_t i) : arr(arr), i(i) {}
+
+template <typename Array>
+typename Array::reference Iter<Array>::operator*() {
+  return arr[i];
+}
+
+template <typename Array>
+typename Array::reference Iter<Array>::operator[](std::size_t n) const {
+  return *(*this + n);
+}
+
+template <typename Array>
+typename Array::iterator& Iter<Array>::operator++() {
+  ++i;
+  return *this;
+}
+
+template <typename Array>
+typename Array::iterator Iter<Array>::operator++(int) {
+  auto copied = *this;
+  ++*this;
+  return copied;
+}
+
+template <typename Array>
+typename Array::iterator& Iter<Array>::operator+=(std::size_t n) {
+  i += n;
+  return *this;
+}
+
+template <typename Array>
+typename Array::iterator Iter<Array>::operator+(std::size_t n) const {
+  auto copied = *this;
+  copied += n;
+  return copied;
+}
+
+template <typename Array>
+typename Array::iterator& Iter<Array>::operator--() {
+  --i;
+  return *this;
+}
+
+template <typename Array>
+typename Array::iterator Iter<Array>::operator--(int) {
+  auto copied = *this;
+  --*this;
+  return copied;
+}
+
+template <typename Array>
+bool Iter<Array>::operator==(const Iter& right) {
+  return i == right.i && arr[i] == right.arr[right.i];
+}
+
+template <typename Array>
+bool Iter<Array>::operator!=(const Iter& right) {
+  return !(*this == right);
+}
+
+template <typename Array>
+bool Iter<Array>::operator<(const Iter& right) const {
+  return i < right.i;
+}
+
+template <typename Array>
+bool Iter<Array>::operator<=(const Iter& right) const {
+  return i <= right.i;
+}
+
+template <typename Array>
+bool Iter<Array>::operator>(const Iter& right) const {
+  return i > right.i;
+}
+
+template <typename Array>
+bool Iter<Array>::operator>=(const Iter& right) const {
+  return i >= right.i;
+}
+
+template <typename Array>
 struct ConstIter {
   ConstIter(const Array& arr, std::size_t i) : arr(arr), i(i) {}
 
-  ConstIter(const Iter<Array> iter) : arr(iter.arr), i(iter.i) {}
+  ConstIter(const typename Array::iterator iter) : arr(iter.arr), i(iter.i) {}
 
   typename Array::const_reference operator*() const { return arr[i]; }
 
@@ -126,46 +183,43 @@ struct ConstIter {
 
 template <typename T, std::size_t N>
 struct Array {
-  using value_type = T;
-  using reference = value_type&;
-  using const_reference = value_type const&;
+  using value = T;
+  using reference = value&;
+  using const_reference = value const&;
+  using iterator = Iter<Array>;
+  using const_iterator = ConstIter<Array>;
 
   reference operator[](std::size_t i) { return data[i]; }
   const_reference operator[](std::size_t i) const { return data[i]; }
 
   std::size_t size() const { return N; }
 
-  Iter<Array> begin() { return Iter<Array>(*this, 0); }
+  iterator begin() { return iterator(*this, 0); }
 
-  ConstIter<Array> begin() const { return ConstIter<Array>(*this, 0); }
+  const_iterator begin() const { return const_iterator(*this, 0); }
 
-  Iter<Array> end() { return Iter<Array>(*this, N); }
+  iterator end() { return iterator(*this, N); }
 
-  ConstIter<Array> end() const { return ConstIter<Array>(*this, N); }
+  const_iterator end() const { return const_iterator(*this, N); }
 
   reference front() { return data[0]; }
-  const reference front() const { return data[0]; }
+  const_reference front() const { return data[0]; }
 
   reference back() { return data[N - 1]; }
-  const reference back() const { return data[N - 1]; }
+  const_reference back() const { return data[N - 1]; }
 
-  value_type data[N];
+  value data[N];
 };
 
 int main() {
   auto a = Array<int, 20>{5, 4, 3, 2, 1};
-  for (auto iter = a.begin(); iter != a.end(); ++iter) {
-    auto original = *iter;
-    *iter = 0;
-    std::cout << "array: " << *iter << std::endl;
-    *iter = original;
-  }
-
   const auto b = a;
+
+  for (auto iter = a.begin(); iter != a.end(); ++iter) {
+    std::cout << *iter << std::endl;
+  }
   for (auto iter = b.begin(); iter != b.end(); ++iter) {
-    // *iter = 0;
-    std::cout << "const array: " << *iter << std::endl;
-    // *iter = original;
+    std::cout << *iter << std::endl;
   }
 
   return EXIT_SUCCESS;
