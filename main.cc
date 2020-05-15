@@ -20,6 +20,10 @@ struct Iter {
 
   typename Array::iterator operator--(int);
 
+  typename Array::iterator& operator-=(std::size_t n);
+
+  typename Array::iterator operator-(std::size_t n) const;
+
   bool operator==(const Iter& right);
 
   bool operator!=(const Iter& right);
@@ -89,6 +93,19 @@ typename Array::iterator Iter<Array>::operator--(int) {
 }
 
 template <typename Array>
+typename Array::iterator& Iter<Array>::operator-=(std::size_t n) {
+  i -= n;
+  return *this;
+}
+
+template <typename Array>
+typename Array::iterator Iter<Array>::operator-(std::size_t n) const {
+  auto copied = *this;
+  copied -= n;
+  return copied;
+}
+
+template <typename Array>
 bool Iter<Array>::operator==(const Iter& right) {
   return i == right.i && **this == *(const_cast<Iter&>(right));
 }
@@ -139,6 +156,10 @@ struct ConstIter {
   typename Array::const_iterator& operator--();
 
   typename Array::const_iterator operator--(int);
+
+  typename Array::const_iterator& operator-=(std::size_t n);
+
+  typename Array::const_iterator operator-(std::size_t n) const;
 
   bool operator==(const ConstIter& right);
 
@@ -211,6 +232,20 @@ template <typename Array>
 typename Array::const_iterator ConstIter<Array>::operator--(int) {
   auto copied = *this;
   --*this;
+  return copied;
+}
+
+template <typename Array>
+typename Array::const_iterator& ConstIter<Array>::operator-=(std::size_t n) {
+  i -= n;
+  return *this;
+}
+
+template <typename Array>
+typename Array::const_iterator ConstIter<Array>::operator-(
+    std::size_t n) const {
+  auto copied = *this;
+  copied -= n;
   return copied;
 }
 
