@@ -90,7 +90,7 @@ typename Array::iterator Iter<Array>::operator--(int) {
 
 template <typename Array>
 bool Iter<Array>::operator==(const Iter& right) {
-  return i == right.i && arr[i] == right.arr[right.i];
+  return i == right.i && **this == *(const_cast<Iter&>(right));
 }
 
 template <typename Array>
@@ -216,7 +216,7 @@ typename Array::const_iterator ConstIter<Array>::operator--(int) {
 
 template <typename Array>
 bool ConstIter<Array>::operator==(const ConstIter& right) {
-  return i == right.i && arr[i] == *right;
+  return i == right.i && **this == *right;
 }
 
 template <typename Array>
