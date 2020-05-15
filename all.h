@@ -1,3 +1,6 @@
+#ifndef ALL_H
+#define ALL_H
+
 #include <cassert>
 #include <cerrno>
 #include <cfloat>
@@ -61,3 +64,5 @@
 #include <thread>
 
 using namespace std::literals;
+
+#endif
