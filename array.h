@@ -18,12 +18,13 @@ struct Array {
 
   std::size_t size() const;
 
-  iterator begin();
+  reference at(std::size_t i);
+  const_reference at(std::size_t i) const;
 
+  iterator begin();
   const_iterator begin() const;
 
   iterator end();
-
   const_iterator end() const;
 
   reference front();
@@ -49,6 +50,20 @@ typename Array<T, N>::const_reference Array<T, N>::operator[](
 template <typename T, std::size_t N>
 std::size_t Array<T, N>::size() const {
   return N;
+}
+
+template <typename T, std::size_t N>
+typename Array<T, N>::reference Array<T, N>::at(std::size_t i) {
+  if (i >= size()) {
+    throw std::out_of_range(std::to_string(i));
+  }
+
+  return (*this)[i];
+}
+
+template <typename T, std::size_t N>
+typename Array<T, N>::const_reference Array<T, N>::at(std::size_t i) const {
+  return at(i);
 }
 
 template <typename T, std::size_t N>
