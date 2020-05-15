@@ -8,8 +8,8 @@
 template <typename T, std::size_t N>
 struct Array {
   using value = T;
-  using reference = value&;
-  using const_reference = value const&;
+  using reference = value &;
+  using const_reference = const reference;
   using iterator = Iter<Array>;
   using const_iterator = ConstIter<Array>;
 
