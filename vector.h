@@ -11,11 +11,18 @@ class Vector {
   using const_pointer = const pointer;
   using reference = value_t&;
   using const_reference = const reference;
+  using iterator = pointer;
+  using reverse_iterator = std::reverse_iterator<iterator>;
   using allocator_t = Alloc;
 
   Vector();
 
   Vector(std::size_t);
+
+  Vector(std::initializer_list<value_t>);
+
+  template <typename InputIter>
+  Vector(InputIter, InputIter);
 
   Vector(const allocator_t&);
 
@@ -29,16 +36,22 @@ class Vector {
 
   void reserve(std::size_t);
 
-  pointer begin() noexcept;
+  void pushBack(const_reference);
 
-  pointer end() noexcept;
+  void shrinkToFit();
 
-  std::reverse_iterator<pointer> rbegin() noexcept;
+  iterator begin() noexcept;
 
-  std::reverse_iterator<pointer> rend() noexcept;
+  iterator end() noexcept;
+
+  reverse_iterator rbegin() noexcept;
+
+  reverse_iterator rend() noexcept;
 
  private:
   using allocator_traits = std::allocator_traits<allocator_t>;
+
+  void copy(pointer, iterator, iterator);
 
   void construct(pointer);
 
@@ -46,7 +59,7 @@ class Vector {
 
   void clear() noexcept;
 
-  void destroyUntil(std::reverse_iterator<pointer>);
+  void destroyUntil(reverse_iterator);
 
   void destroy(pointer);
 
@@ -71,6 +84,20 @@ Vector<T, Alloc>::Vector(std::size_t n) : Vector(allocator_t()) {
 template <typename T, typename Alloc>
 Vector<T, Alloc>::Vector(const allocator_t& alloc)
     : first(nullptr), last(nullptr), reserved_last(nullptr), alloc(alloc) {}
+
+template <typename T, typename Alloc>
+Vector<T, Alloc>::Vector(std::initializer_list<value_t> list)
+    : Vector(std::begin(list), std::end(list)) {}
+
+template <typename T, typename Alloc>
+template <typename InputIter>
+Vector<T, Alloc>::Vector(InputIter first, InputIter last)
+    : Vector(allocator_t()) {
+  reserve(std::distance(first, last));
+  for (auto iter = first; iter != last; ++iter) {
+    pushBack(*iter);
+  }
+}
 
 template <typename T, typename Alloc>
 Vector<T, Alloc>::~Vector() {
@@ -113,37 +140,72 @@ void Vector<T, Alloc>::reserve(std::size_t n) {
   }
 
   auto old = *this;
+
   first = allocate(n);
-  last = first;
+  last = first + old.size();
   reserved_last = first + n;
 
-  for (auto iter = old.begin(); iter != old.end(); ++iter, ++last) {
-    construct(last, std::move(*iter));
-  }
-
-  old.clear();
+  copy(first, old.begin(), old.end());
 }
 
 template <typename T, typename Alloc>
-typename Vector<T, Alloc>::pointer Vector<T, Alloc>::begin() noexcept {
+void Vector<T, Alloc>::pushBack(const_reference v) {
+  if (size() + 1 > capacity()) {
+    int n = size();
+    if (n == 0) {
+      n = 1;
+    }
+
+    reserve(n * 2);
+  }
+
+  construct(last, std::move(v));
+  ++last;
+}
+
+template <typename T, typename Alloc>
+void Vector<T, Alloc>::shrinkToFit() {
+  if (size() == capacity()) {
+    return;
+  }
+
+  auto n = size();
+  auto new_first = allocate(n);
+  copy(new_first, begin(), end());
+
+  clear();
+  deallocate();
+  first = new_first;
+  last = new_first + n;
+  reserved_last = last;
+}
+
+template <typename T, typename Alloc>
+typename Vector<T, Alloc>::iterator Vector<T, Alloc>::begin() noexcept {
   return first;
 }
 
 template <typename T, typename Alloc>
-typename Vector<T, Alloc>::pointer Vector<T, Alloc>::end() noexcept {
+typename Vector<T, Alloc>::iterator Vector<T, Alloc>::end() noexcept {
   return last;
 }
 
 template <typename T, typename Alloc>
-std::reverse_iterator<typename Vector<T, Alloc>::pointer>
+typename Vector<T, Alloc>::reverse_iterator
 Vector<T, Alloc>::rbegin() noexcept {
-  return std::reverse_iterator<pointer>(last);
+  return reverse_iterator(last);
 }
 
 template <typename T, typename Alloc>
-std::reverse_iterator<typename Vector<T, Alloc>::pointer>
-Vector<T, Alloc>::rend() noexcept {
-  return std::reverse_iterator<pointer>(first);
+typename Vector<T, Alloc>::reverse_iterator Vector<T, Alloc>::rend() noexcept {
+  return reverse_iterator(first);
+}
+
+template <typename T, typename Alloc>
+void Vector<T, Alloc>::copy(pointer p, iterator first, iterator last) {
+  for (auto iter = first; iter != last; ++iter, ++p) {
+    construct(p, std::move(*iter));
+  }
 }
 
 template <typename T, typename Alloc>
@@ -162,7 +224,7 @@ void Vector<T, Alloc>::clear() noexcept {
 }
 
 template <typename T, typename Alloc>
-void Vector<T, Alloc>::destroyUntil(std::reverse_iterator<pointer> last) {
+void Vector<T, Alloc>::destroyUntil(reverse_iterator last) {
   for (auto iter = rbegin(); iter != last; ++iter, --this->last) {
     destroy(&*iter);
   }
