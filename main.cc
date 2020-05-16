@@ -1,10 +1,11 @@
 #include "all.h"
-#include "array.h"
+#include "vector.h"
 
 int main() {
-  auto a = Array<int, 10>{1, 2, 3, 4, 5};
-  for (auto x : a) {
-    std::cout << x << std::endl;
+  auto x = Vector<int>(10);
+
+  for (auto v : x) {
+    std::cout << v << std::endl;
   }
 
   return EXIT_SUCCESS;
