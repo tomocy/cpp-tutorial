@@ -27,7 +27,11 @@ class Vector {
 
   Vector(const allocator_t&);
 
+  Vector(const Vector&);
+
   ~Vector();
+
+  Vector& operator=(const Vector&);
 
   std::size_t size() const noexcept;
 
@@ -41,13 +45,17 @@ class Vector {
 
   void shrinkToFit();
 
-  reference front() noexcept;
+  reference front();
 
-  const_reference front() const noexcept;
+  const_reference front() const;
 
-  reference back() noexcept;
+  reference back();
 
-  const_reference back() const noexcept;
+  const_reference back() const;
+
+  reference at(std::size_t);
+
+  const_reference at(std::size_t) const;
 
   iterator begin() noexcept;
 
@@ -110,6 +118,34 @@ Vector<T, Alloc>::Vector(InputIter first, InputIter last)
   for (auto iter = first; iter != last; ++iter) {
     pushBack(*iter);
   }
+}
+
+template <typename T, typename Alloc>
+Vector<T, Alloc>::Vector(const Vector& src)
+    : Vector(
+          allocator_traits::select_on_container_copy_construction(src.alloc)) {
+  reserve(src.size());
+  last = reserved_last;
+  construct(first, std::begin(src), std::end(src));
+}
+
+template <typename T, typename Alloc>
+Vector<T, Alloc>& Vector<T, Alloc>::operator=(const Vector& src) {
+  if (this == &src) {
+    return *this;
+  }
+
+  if (size() == src.size()) {
+    std::copy(std::begin(src), std::end(src), first);
+    return *this;
+  }
+
+  reserve(src.size());
+  last = first + src.size();
+  construct(first, std::begin(src), std::end(src));
+  std::copy(std::begin(src), std::end(src), first);
+
+  return *this;
 }
 
 template <typename T, typename Alloc>
@@ -193,25 +229,42 @@ void Vector<T, Alloc>::shrinkToFit() {
 }
 
 template <typename T, typename Alloc>
-typename Vector<T, Alloc>::reference Vector<T, Alloc>::front() noexcept {
-  return *first;
+typename Vector<T, Alloc>::reference Vector<T, Alloc>::front() {
+  return at(0);
 }
 
 template <typename T, typename Alloc>
-typename Vector<T, Alloc>::const_reference Vector<T, Alloc>::front() const
-    noexcept {
-  return *first;
+typename Vector<T, Alloc>::const_reference Vector<T, Alloc>::front() const {
+  return at(0);
 }
 
 template <typename T, typename Alloc>
-typename Vector<T, Alloc>::reference Vector<T, Alloc>::back() noexcept {
-  return *(last - 1);
+typename Vector<T, Alloc>::reference Vector<T, Alloc>::back() {
+  return at(size() - 1);
 }
 
 template <typename T, typename Alloc>
-typename Vector<T, Alloc>::const_reference Vector<T, Alloc>::back() const
-    noexcept {
-  return *(last - 1);
+typename Vector<T, Alloc>::const_reference Vector<T, Alloc>::back() const {
+  return at(size() - 1);
+}
+
+template <typename T, typename Alloc>
+typename Vector<T, Alloc>::reference Vector<T, Alloc>::at(std::size_t i) {
+  if (i >= size()) {
+    throw std::out_of_range("index was " + std::to_string(i));
+  }
+
+  return first[i];
+}
+
+template <typename T, typename Alloc>
+typename Vector<T, Alloc>::const_reference Vector<T, Alloc>::at(
+    std::size_t i) const {
+  if (i >= size()) {
+    throw std::out_of_range("index was " + std::to_string(i));
+  }
+
+  return first[i];
 }
 
 template <typename T, typename Alloc>

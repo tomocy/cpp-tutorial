@@ -4,15 +4,17 @@
 #include "vector.h"
 
 template <typename Vector>
-void Print(const Vector& v) {
-  std::cout << "vector ---" << std::endl;
+void Print(const std::string name, const Vector& v) {
+  std::cout << name << " ---" << std::endl;
   std::cout << "- metadata ---" << std::endl;
   std::cout << "    size: " << v.size() << std::endl;
   std::cout << "    capacity: " << v.capacity() << std::endl;
   std::cout << "    first: " << v.begin() << std::endl;
   std::cout << "    last: " << v.end() << std::endl;
-  std::cout << "    front: " << v.front() << std::endl;
-  std::cout << "    back: " << v.back() << std::endl;
+  if (v.size() >= 1) {
+    std::cout << "    front: " << v.front() << std::endl;
+    std::cout << "    back: " << v.back() << std::endl;
+  }
   std::cout << "- data ---" << std::endl;
   for (auto x : v) {
     std::cout << x << std::endl;
@@ -21,26 +23,26 @@ void Print(const Vector& v) {
 
 int main() {
   auto src = std::array<int, 5>{1, 2, 3, 4, 5};
-  auto v = Vector<int>(std::begin(src), std::end(src));
-  Print(v);
 
-  std::cout << "reserved: " << std::endl;
-  v.reserve(20);
-  Print(v);
+  auto x = Vector<int>(std::begin(src), std::end(src));
+  Print("x", x);
 
-  std::cout << "pushed back: " << std::endl;
-  for (auto i = 0; i < 5; ++i) {
-    v.pushBack(i);
-  }
-  Print(v);
+  auto y = Vector<int>(x);
+  Print("y", y);
 
-  std::cout << "shrunk to fit: " << std::endl;
-  v.shrinkToFit();
-  Print(v);
+  y.at(0) = 100;
+  Print("x after changing y", x);
+  Print("y after changing", y);
 
-  std::cout << "resized: " << std::endl;
-  v.resize(30);
-  Print(v);
+  auto z = Vector<int>(20);
+  Print("z before coping y", z);
+  z = y;
+  Print("z after coping y", z);
+
+  auto a = Vector<int>(0);
+  Print("a before coping z", a);
+  a = z;
+  Print("a after coping z", a);
 
   return EXIT_SUCCESS;
 }
