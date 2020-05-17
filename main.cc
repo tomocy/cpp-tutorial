@@ -44,5 +44,13 @@ int main() {
   a = z;
   Print("a after coping z", a);
 
+  auto b = Vector<int>(std::move(a));
+  Print("a after moving", a);
+  Print("b", b);
+
+  auto c = std::move(b);
+  Print("b after moving", b);
+  Print("c", c);
+
   return EXIT_SUCCESS;
 }

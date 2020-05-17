@@ -29,9 +29,13 @@ class Vector {
 
   Vector(const Vector&);
 
+  Vector(Vector&&);
+
   ~Vector();
 
   Vector& operator=(const Vector&);
+
+  Vector& operator=(Vector&&);
 
   std::size_t size() const noexcept;
 
@@ -72,6 +76,10 @@ class Vector {
  private:
   using allocator_traits = std::allocator_traits<allocator_t>;
 
+  Vector(pointer, pointer, pointer, allocator_t);
+
+  void getMoved() noexcept;
+
   void construct(pointer);
 
   void construct(pointer, iterator, iterator);
@@ -104,7 +112,7 @@ Vector<T, Alloc>::Vector(std::size_t n) : Vector(allocator_t()) {
 
 template <typename T, typename Alloc>
 Vector<T, Alloc>::Vector(const allocator_t& alloc)
-    : first(nullptr), last(nullptr), reserved_last(nullptr), alloc(alloc) {}
+    : Vector(nullptr, nullptr, nullptr, alloc) {}
 
 template <typename T, typename Alloc>
 Vector<T, Alloc>::Vector(std::initializer_list<value_t> list)
@@ -130,6 +138,12 @@ Vector<T, Alloc>::Vector(const Vector& src)
 }
 
 template <typename T, typename Alloc>
+Vector<T, Alloc>::Vector(Vector&& src)
+    : Vector(src.first, src.last, src.reserved_last, src.alloc) {
+  src.getMoved();
+}
+
+template <typename T, typename Alloc>
 Vector<T, Alloc>& Vector<T, Alloc>::operator=(const Vector& src) {
   if (this == &src) {
     return *this;
@@ -144,6 +158,22 @@ Vector<T, Alloc>& Vector<T, Alloc>::operator=(const Vector& src) {
   last = first + src.size();
   construct(first, std::begin(src), std::end(src));
   std::copy(std::begin(src), std::end(src), first);
+
+  return *this;
+}
+
+template <typename T, typename Alloc>
+Vector<T, Alloc>& Vector<T, Alloc>::operator=(Vector&& src) {
+  if (this == &src) {
+    return *this;
+  }
+
+  clear();
+  first = src.first;
+  last = src.last;
+  reserved_last = src.reserved_last;
+  alloc = std::move(src.alloc);
+  src.getMoved();
 
   return *this;
 }
@@ -298,6 +328,19 @@ Vector<T, Alloc>::rbegin() noexcept {
 template <typename T, typename Alloc>
 typename Vector<T, Alloc>::reverse_iterator Vector<T, Alloc>::rend() noexcept {
   return reverse_iterator(first);
+}
+
+template <typename T, typename Alloc>
+Vector<T, Alloc>::Vector(pointer first, pointer last, pointer reserved_last,
+                         allocator_t alloc)
+    : first(first), last(last), reserved_last(reserved_last), alloc(alloc) {}
+
+template <typename T, typename Alloc>
+void Vector<T, Alloc>::getMoved() noexcept {
+  first = nullptr;
+  last = nullptr;
+  reserved_last = nullptr;
+  alloc = std::move(alloc);
 }
 
 template <typename T, typename Alloc>
